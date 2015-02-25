@@ -1,0 +1,1 @@
+!function(a,b,c,d){a.extend(XenForo.TemplateEditor.prototype,{__construct:function(a){this.useAjaxSave=!1;this.setupEditors(a)},_superInitializePrimaryEditor:XenForo.TemplateEditor.prototype.initializePrimaryEditor,initializePrimaryEditor:function(){this._superInitializePrimaryEditor();this.$templateTextarea.attr({name:"replace"})}})}(jQuery,this,document);

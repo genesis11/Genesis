@@ -1,0 +1,33 @@
+INSTALLATION
+------------
+
+Use your FTP client to connect to your server and navigate to the directory where
+you installed XenForo. Unzip the file you downloaded in step 1 and upload the
+contents of the upload directory into the directory where you installed XenForo.
+
+Log in to your XenForo admin control panel, and select Install Add-on from the left.
+In Install from file on server, enter
+library/Genesis/addon-Genesis.xml
+and submit the form.
+
+After the caches rebuild, Genesis will now be installed and you should configure it.
+
+
+UPGRADING
+---------
+
+Use your FTP client to connect to your server and navigate to the directory where
+you installed XenForo. Unzip the file you downloaded in step 1 and upload the
+contents of the upload directory into the directory where you installed XenForo.
+
+You should ensure that files are overwritten.
+
+Log in to your XenForo admin control panel, and select List Add-ons from the left.
+
+Under the Controls drop-down for Genesis, select Upgrade.
+
+In Upgrade from file on server, enter
+library/Genesis/addon-Genesis.xml
+and submit the form.
+
+After the caches rebuild, the Genesis upgrade will be complete.

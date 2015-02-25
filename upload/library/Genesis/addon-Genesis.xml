@@ -1,0 +1,775 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="Genesis" title="Genesis" version_string="1.0.0 Beta 1" version_id="1000131" url="" install_callback_class="Genesis_Install_Controller" install_callback_method="install" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties>
+    <property property_name="gen_touchBrowser" property_type="scalar"><![CDATA[1]]></property>
+  </admin_style_properties>
+  <admin_templates>
+    <template title="genesis.css"><![CDATA[<xen:if is="!{xen:property gen_fixedHeader}">
+	.NoTouch #header {
+		position: relative !important;
+	}
+	
+	.NoTouch #contentContainer {
+		top: 0;
+	}
+	
+	.NoTouch #body {
+		padding-top: 0;
+	}
+	
+	.NoTouch #sideNav.unFix {
+		position: relative !important;
+	}
+</xen:if>
+
+.transmogrifier
+{
+	transform: rotate(180deg);
+}]]></template>
+    <template title="gen_top_choosers"><![CDATA[<div class="topChoosers">
+	<div class="Popup">
+		<span class="muted">{xen:phrase add_on}:</span> <a rel="Menu">{xen:if $addOnSelected, {$addOns.{$addOnSelected}.title}, '({xen:phrase unspecified})'}</a>
+		<div class="Menu">
+			<div class="primaryContent menuHeader"><h3>{xen:phrase add_on}</h3></div>
+			<ul class="secondaryContent blockLinksList">
+				<li><a href="{xen:adminlink 'add-ons/{$prefix}'}">({xen:phrase unspecified})</a></li>
+				<xen:foreach loop="$addOns" value="$addOn">
+					<li><a href="{xen:adminlink 'add-ons/{$prefix}', $addOn}">{$addOn.title}</a></li>
+				</xen:foreach>
+			</ul>
+		</div>
+	</div>
+</div>
+]]></template>
+    <template title="style_property_unit_select"><![CDATA[<xen:selectunit name="properties[{$property.property_definition_id}]" value="{$property.propertyValueScalar}" label="{$property.title}" hint="{xen:if $debugMode, $property.property_name}">
+	<xen:options source="$formatParams" />
+	<xen:html>
+		<xen:include template="style_property_unit_extra"><xen:set var="$reset">{xen:phrase reset}</xen:set></xen:include>
+		<xen:if is="{$property.description}"><p class="explain">{$property.description}</p></xen:if>
+	</xen:html>
+</xen:selectunit>]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="addon_list" modification_key="gen_addonList" description="Adds options to add-on list controls." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:popup title="{xen:phrase controls}" ctrlclass="toolsCtrl">.*)(</xen:popup>)#Us]]></find>
+      <replace><![CDATA[${1}
+<xen:link href="{xen:adminlink 'add-ons/admin-style-properties', $addOn}" displayif="{$canAccessDevelopment}">{xen:phrase admin_style_properties}</xen:link>
+<xen:link href="{xen:adminlink 'add-ons/admin-template-mods', $addOn}" displayif="{$canAccessDevelopment}">{xen:phrase admin_template_modifications}</xen:link>
+<xen:link href="{xen:adminlink 'add-ons/admin-templates', $addOn}" displayif="{$canAccessDevelopment}">{xen:phrase admin_templates}</xen:link>
+<xen:link href="{xen:adminlink 'add-ons/phrases', $addOn}">{xen:phrase phrases}</xen:link>
+<xen:link href="{xen:adminlink 'add-ons/style-properties', $addOn}">{xen:phrase style_properties}</xen:link>
+<xen:link href="{xen:adminlink 'add-ons/template-modifications', $addOn}">{xen:phrase template_modifications}</xen:link>
+<xen:link href="{xen:adminlink 'add-ons/templates', $addOn}">{xen:phrase templates}</xen:link>
+${2}]]></replace>
+    </modification>
+    <modification template="admin_style_property_group_list" modification_key="gen_adminStylePropertyGroupList" description="Adds top chooser to admin style property list." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#{xen:adminlink 'style-property-groups/add', ''(.*<xen:require js="js/xenforo/filter_list.js" />)(.*){xen:adminlink admin-style-properties}#Us]]></find>
+      <replace><![CDATA[{xen:adminlink 'add-ons/style-property-groups/add', {$addOns.{$addOnSelected}}
+${1}
+<xen:include template="gen_top_choosers">
+	<xen:set var="$prefix">admin-style-properties</xen:set>
+</xen:include>
+${2}
+{xen:adminlink 'add-ons/admin-style-properties', {$addOns.{$addOnSelected}}}]]></replace>
+    </modification>
+    <modification template="admin_template_list" modification_key="gen_adminTemplateList" description="Adds top chooser to admin template list." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#{xen:adminlink 'admin-templates/add'}(.*<xen:require js="js/xenforo/filter_list.js" />)(.*){xen:adminlink admin-templates}#Us]]></find>
+      <replace><![CDATA[{xen:adminlink 'add-ons/admin-templates/add', {$addOns.{$addOnSelected}}}
+${1}
+<xen:include template="gen_top_choosers">
+	<xen:set var="$prefix">admin-templates</xen:set>
+</xen:include>
+${2}
+{xen:adminlink 'add-ons/admin-templates', {$addOns.{$addOnSelected}}}]]></replace>
+    </modification>
+    <modification template="base_template_modification_edit" modification_key="gen_baseTemplateModificationEdit" description="Adds template edit javascript to template modification editor." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:form)([^>]*class=")(.*<xen:textboxunit label="{xen:phrase replace}:")(.*)(</xen:form>)#Us]]></find>
+      <replace><![CDATA[<xen:require css="template_edit.css" />
+<xen:require js="js/xenforo/template_edit.js" />
+<xen:require js="js/genesis/template_edit.js" />
+${1} id="templateEditor"${2}PrimaryTemplateOnly ${3} id="templateTextarea"${4}
+<input type="hidden" id="templateTitleOriginal" />
+${5}]]></replace>
+    </modification>
+    <modification template="base_template_modification_list" modification_key="gen_baseTemplateModificationList" description="Adds top chooser to template modification list." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#{xen:adminlink '{\$prefix}/add'}(.*<xen:require js="js/xenforo/filter_list.js" />)(.*){xen:adminlink '{\$prefix}/toggle'}(.*count=<span class="FilterListCount">)({xen:number \$modificationCount})#Us]]></find>
+      <replace><![CDATA[{xen:adminlink 'add-ons/{$prefix}/add', {$addOns.{$addOnSelected}}}
+${1}
+<xen:include template="gen_top_choosers" />
+${2}
+{xen:adminlink 'add-ons/{$prefix}/toggle', {$addOns.{$addOnSelected}}}
+${3}
+{xen:if {$addOns.{$addOnSelected}}, {xen:count {$groupedModifications.{$addOnSelected}}}, ${4}}]]></replace>
+    </modification>
+    <modification template="header" modification_key="gen_header" description="Adds javascript for fixed header." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#$#]]></find>
+      <replace><![CDATA[<xen:if is="{xen:property gen_fixedHeader}">
+	<script>
+	   jQuery(document).ready(function($){
+	      function scrollIfAnchor(href) {
+	         href = typeof(href) == "string" ? href : $(this).attr("href");
+	         if(!href) return;
+	         var fromTop = $('#content').offset().top;
+	         var $target = $(href);
+	         if($target.length) {
+	            $('html, body').animate({ scrollTop: $target.offset().top - fromTop });
+	         }
+	      }    
+	
+	      scrollIfAnchor(window.location.hash);
+	      $("body").on("click", "a[href^='#']", scrollIfAnchor);
+	   });
+	</script>
+<xen:else />
+	<script>
+	   jQuery(document).ready(function($){
+	      $(window).bind('scroll', function() {
+	         var navHeight = ($(window).scrollTop());
+	         if (navHeight > $('#header').outerHeight()) {
+	            $('#sideNav').removeClass('unFix');
+                    $('#sideNav').css('margin-top', "-" + $('#header').outerHeight() + "px");
+	         } else {
+	            $('#sideNav').addClass('unFix');
+                    $('#sideNav').css('margin-top', 0);
+	         }
+	       });
+	   });
+	</script>
+</xen:if>]]></replace>
+    </modification>
+    <modification template="PAGE_CONTAINER" modification_key="gen_pageContainer" description="Applies template modifications for various style properties." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<!--XenForo_Require:CSS-->.*)(<xen:if is="{\$head}">)#Us]]></find>
+      <replace><![CDATA[<xen:if is="{$googleFonts}"><link href='http://fonts.googleapis.com/css?family={$googleFonts}' rel='stylesheet' type='text/css'></xen:if>
+	${1}<xen:if is="{xen:property gen_favIcon}"><link rel="icon" type="image/x-icon" href="{xen:property gen_favIcon}" /></xen:if>
+	${2}]]></replace>
+    </modification>
+    <modification template="style_property_group_list" modification_key="gen_stylePropertyGroupList" description="Adds top chooser to style property list." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#{xen:adminlink 'style-property-groups/add', ''(.*<xen:require js="js/xenforo/filter_list.js" />)#Us]]></find>
+      <replace><![CDATA[{xen:adminlink 'add-ons/style-property-groups/add', {$addOns.{$addOnSelected}}
+${1}
+<xen:include template="gen_top_choosers">
+	<xen:set var="$prefix">style-properties</xen:set>
+</xen:include>]]></replace>
+    </modification>
+    <modification template="template_list" modification_key="gen_templateList" description="Adds top chooser to template list." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#{xen:adminlink 'templates/add', ''(.*<xen:require js="js/xenforo/filter_list.js" />)(.*){xen:adminlink 'templates'}#Us]]></find>
+      <replace><![CDATA[{xen:adminlink 'add-ons/templates/add', {$addOns.{$addOnSelected}}
+${1}
+<xen:include template="gen_top_choosers">
+	<xen:set var="$prefix">templates</xen:set>
+</xen:include>
+${2}
+{xen:adminlink 'add-ons/templates', {$addOns.{$addOnSelected}}}]]></replace>
+    </modification>
+  </admin_template_modifications>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAddOnsRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_AddOns" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAdminStylePropertiesRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_AdminStyleProperties" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAdminTemplateModificationsRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_AdminTemplateModifications" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAdminTemplatesRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_AdminTemplates" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadStylePropertiesRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_StyleProperties" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadTemplateModificationsRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_TemplateModifications" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadTemplatesRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_Templates" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadEmailTemplateModificationsRoutePrefixAdmin" active="1" hint="XenForo_Route_PrefixAdmin_EmailTemplateModifications" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAdminStylePropertyControllerAdmin" active="1" hint="XenForo_ControllerAdmin_AdminStyleProperty" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAdminTemplateControllerAdmin" active="1" hint="XenForo_ControllerAdmin_AdminTemplate" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadAdminTemplateModificationControllerAdmin" active="1" hint="XenForo_ControllerAdmin_AdminTemplateModification" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadStylePropertyControllerAdmin" active="1" hint="XenForo_ControllerAdmin_StyleProperty" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadTemplateControllerAdmin" active="1" hint="XenForo_ControllerAdmin_Template" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadTemplateModificationControllerAdmin" active="1" hint="XenForo_ControllerAdmin_TemplateModification" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadStyleControllerAdmin" active="1" hint="XenForo_ControllerAdmin_Style" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadStylePropertyGroupControllerAdmin" active="1" hint="XenForo_ControllerAdmin_StylePropertyGroup" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadEmailTemplateModificationControllerAdmin" active="1" hint="XenForo_ControllerAdmin_EmailTemplateModification" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadSocialCategoryController" active="1" hint="Waindigo_SocialGroups_ControllerPublic_SocialCategory" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadSocialForumController" active="1" hint="Waindigo_SocialGroups_ControllerPublic_SocialForum" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadForumController" active="1" hint="XenForo_ControllerPublic_Forum" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadMiscController" active="1" hint="XenForo_ControllerPublic_Misc" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadSocialForumModel" active="1" hint="Waindigo_SocialGroups_Model_SocialForum" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadNodeModel" active="1" hint="XenForo_Model_Node" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadThreadModel" active="1" hint="XenForo_Model_Thread" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadThreadWatchModel" active="1" hint="XenForo_Model_ThreadWatch" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadCssOutput" active="1" hint="XenForo_CssOutput" description=""/>
+    <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadStylePropertyListViewAdmin" active="1" hint="XenForo_ViewAdmin_StyleProperty_List" description=""/>
+    <listener event_id="navigation_tabs" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="navigationTabs" active="1" hint="" description=""/>
+    <listener event_id="template_create" execute_order="10" callback_class="Genesis_Listener_Template" callback_method="templateCreate" active="1" hint="" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="genesis" display_order="41" debug_only="0"/>
+    <option option_id="gen_chooserAdminStyleProperties" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="100"/>
+    </option>
+    <option option_id="gen_chooserAdminTemplateMods" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="110"/>
+    </option>
+    <option option_id="gen_chooserAdminTemplates" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="120"/>
+    </option>
+    <option option_id="gen_chooserEmailTemplateMods" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="130"/>
+    </option>
+    <option option_id="gen_chooserStyleProperties" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="150"/>
+    </option>
+    <option option_id="gen_chooserTemplateMods" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="160"/>
+    </option>
+    <option option_id="gen_chooserTemplates" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="genesis" display_order="170"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="gen_footer" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Footer]]></phrase>
+    <phrase title="gen_middle" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Middle]]></phrase>
+    <phrase title="gen_navigation_bar" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Navigation Bar]]></phrase>
+    <phrase title="option_gen_chooserAdminStyleProperties" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Admin Style Properties]]></phrase>
+    <phrase title="option_gen_chooserAdminStyleProperties_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_gen_chooserAdminTemplateMods" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Admin Template Modifications]]></phrase>
+    <phrase title="option_gen_chooserAdminTemplateMods_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_gen_chooserAdminTemplates" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Admin Templates]]></phrase>
+    <phrase title="option_gen_chooserAdminTemplates_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_gen_chooserEmailTemplateMods" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Email Template Modifications]]></phrase>
+    <phrase title="option_gen_chooserEmailTemplateMods_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_gen_chooserStyleProperties" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Style Properties]]></phrase>
+    <phrase title="option_gen_chooserStyleProperties_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_gen_chooserTemplateMods" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Template Modifications]]></phrase>
+    <phrase title="option_gen_chooserTemplateMods_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_gen_chooserTemplates" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Default to Add-on Chooser for Templates]]></phrase>
+    <phrase title="option_gen_chooserTemplates_explain" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="option_group_genesis" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Genesis]]></phrase>
+    <phrase title="option_group_genesis_description" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Options for the Genesis add-on.]]></phrase>
+    <phrase title="style_property_gen_contactUsPosition_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_contactUsPosition_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Contact Us Position]]></phrase>
+    <phrase title="style_property_gen_enableTabSelection_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Disabling this option will stop any tabs from appearing as selected.]]></phrase>
+    <phrase title="style_property_gen_enableTabSelection_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Select Active Navigation Tab]]></phrase>
+    <phrase title="style_property_gen_extraCss_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Additional XenForo CSS templates to include on every page (do not include .css extension). Enter one template name on each line.]]></phrase>
+    <phrase title="style_property_gen_extraCss_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[CSS templates]]></phrase>
+    <phrase title="style_property_gen_extraJs_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Additional JavaScript files to include on every page. Enter one filename on each line.]]></phrase>
+    <phrase title="style_property_gen_extraJs_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[JavaScript files]]></phrase>
+    <phrase title="style_property_gen_favIcon_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[This path represents either the relative or absolute path to the icon you want browsers to display for this site.]]></phrase>
+    <phrase title="style_property_gen_favIcon_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Favicon path]]></phrase>
+    <phrase title="style_property_gen_fixedHeader_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will make the header bar float when the page is scrolled.]]></phrase>
+    <phrase title="style_property_gen_fixedHeader_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Fixed header]]></phrase>
+    <phrase title="style_property_gen_fixedLoginBar_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will make the login bar float when the page is scrolled.]]></phrase>
+    <phrase title="style_property_gen_fixedLoginBar_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Fixed login bar]]></phrase>
+    <phrase title="style_property_gen_fixedLogoBlock_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will make the logo block float when the page is scrolled.]]></phrase>
+    <phrase title="style_property_gen_fixedLogoBlock_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Fixed logo block]]></phrase>
+    <phrase title="style_property_gen_fixedModeratorBar_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will make the moderator bar float when the page is scrolled.]]></phrase>
+    <phrase title="style_property_gen_fixedModeratorBar_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Fixed moderator bar]]></phrase>
+    <phrase title="style_property_gen_fontLarge_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 16px, all text set to 16px/12pt will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontLarge_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Large]]></phrase>
+    <phrase title="style_property_gen_fontMedium_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 13px, all text that was previously set to 13px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontMedium_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Medium]]></phrase>
+    <phrase title="style_property_gen_fontSize1_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 9px, all text that was previously set to 9px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize1_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 1]]></phrase>
+    <phrase title="style_property_gen_fontSize2_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 10px, all text that was previously set to 10px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize2_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 2]]></phrase>
+    <phrase title="style_property_gen_fontSize3_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 12px, all text that was previously set to 12px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize3_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 3]]></phrase>
+    <phrase title="style_property_gen_fontSize4_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 15px, all text that was previously set to 15px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize4_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 4]]></phrase>
+    <phrase title="style_property_gen_fontSize5_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 18px, all text that was previously set to 18px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize5_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 5]]></phrase>
+    <phrase title="style_property_gen_fontSize6_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 22px, all text that was previously set to 22px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize6_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 6]]></phrase>
+    <phrase title="style_property_gen_fontSize7_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 26px, all text that was previously set to 26px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSize7_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Size 7]]></phrase>
+    <phrase title="style_property_gen_fontSmall_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 11px, all text that was previously set to 11px will be set to the value specified here.]]></phrase>
+    <phrase title="style_property_gen_fontSmall_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Small]]></phrase>
+    <phrase title="style_property_gen_footerFullWidth_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will extend the footer the full width of the page.]]></phrase>
+    <phrase title="style_property_gen_footerFullWidth_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Full Width Footer]]></phrase>
+    <phrase title="style_property_gen_footerLinksPosition_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_footerLinksPosition_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Footer Links Position]]></phrase>
+    <phrase title="style_property_gen_googleFonts_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enter one font name per line. For multiple font weights, enter the weights after a colon, separated by a comma (e.g. "Open Sans:400,700").]]></phrase>
+    <phrase title="style_property_gen_googleFonts_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Google Fonts]]></phrase>
+    <phrase title="style_property_gen_headerLogoSvg_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[This is the name of the SVG template for the main logo image used in the header of all pages.]]></phrase>
+    <phrase title="style_property_gen_headerLogoSvg_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Header Logo Image SVG Template]]></phrase>
+    <phrase title="style_property_gen_headerLogoTabLinksBelow_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this property will keep tab links below the logo when logo is not full width. This option is ignored if the logo is full width.]]></phrase>
+    <phrase title="style_property_gen_headerLogoTabLinksBelow_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Tab Links Below Logo]]></phrase>
+    <phrase title="style_property_gen_headerLogoWidth_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enter the width in pixels that you would like to reserve for the logo in the header. Set to 100% if you want the navigation bar to be underneath the logo.]]></phrase>
+    <phrase title="style_property_gen_headerLogoWidth_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Width of Header Logo]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatarImg_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[This controls the appearance of the last post avatar image.]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatarImg_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Last Post Avatar]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatarThreadListImg_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[This controls the appearance of the last post avatar image.]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatarThreadListImg_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Last Post Avatar]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatarThreadList_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If enabled, the avatar of the last poster will be displayed alongside the last post details.]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatarThreadList_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Show last post avatar]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatar_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If enabled, the avatar of the last poster will be displayed alongside the last post details.]]></phrase>
+    <phrase title="style_property_gen_lastPostAvatar_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Show last post avatar]]></phrase>
+    <phrase title="style_property_gen_logoBlockContainer_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_logoBlockContainer_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Logo Block Container]]></phrase>
+    <phrase title="style_property_gen_navigationVisitorTabAvatarHeight_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will show the logged in user's avatar on the account tab.]]></phrase>
+    <phrase title="style_property_gen_navigationVisitorTabAvatarHeight_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Account Tab Avatar Height]]></phrase>
+    <phrase title="style_property_gen_navigationVisitorTabAvatar_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will show the logged in user's avatar on the account tab.]]></phrase>
+    <phrase title="style_property_gen_navigationVisitorTabAvatar_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Show avatar on account tab]]></phrase>
+    <phrase title="style_property_gen_navLinkPopUpClosedHover_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_navLinkPopUpClosedHover_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Navigation Link Hover]]></phrase>
+    <phrase title="style_property_gen_navLinkPopUpClosed_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_navLinkPopUpClosed_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Navigation Link]]></phrase>
+    <phrase title="style_property_gen_navTabPopUpClosedHover_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_navTabPopUpClosedHover_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Navigation Tab Hover]]></phrase>
+    <phrase title="style_property_gen_publicTabsLocation_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_publicTabsLocation_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Public Tabs Location]]></phrase>
+    <phrase title="style_property_gen_searchBarLocation_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_searchBarLocation_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Search Bar Location]]></phrase>
+    <phrase title="style_property_gen_showForumListTitle_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If enabled, the board title will be shown on the forum list page.]]></phrase>
+    <phrase title="style_property_gen_showForumListTitle_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Show title on forum list]]></phrase>
+    <phrase title="style_property_gen_sidebarLocation_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_sidebarLocation_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Sidebar Location]]></phrase>
+    <phrase title="style_property_gen_tabLinksLocation_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_tabLinksLocation_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Tab Links Location]]></phrase>
+    <phrase title="style_property_gen_topBorder_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_topBorder_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Top Border]]></phrase>
+    <phrase title="style_property_gen_touchBrowser_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_touchBrowser_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enable touch browser tweaks]]></phrase>
+    <phrase title="style_property_gen_visitorTabsLocation_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_visitorTabsLocation_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Visitor Tabs Location]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties>
+    <property property_name="gen_extraCss" property_type="scalar" definition="1" group_name="general" title="CSS templates" description="Additional XenForo CSS templates to include on every page (do not include .css extension). Enter one template name on each line." css_components="" scalar_type="longstring" scalar_parameters="" display_order="500" sub_group="pageContainer"><![CDATA[genesis]]></property>
+    <property property_name="gen_lastPostAvatar" property_type="scalar" definition="1" group_name="nodeList" title="Show last post avatar" description="If enabled, the avatar of the last poster will be displayed alongside the last post details." css_components="" scalar_type="boolean" scalar_parameters="" display_order="310" sub_group="lastPostAvatar"><![CDATA[1]]></property>
+    <property property_name="gen_extraJs" property_type="scalar" definition="1" group_name="general" title="JavaScript files" description="Additional JavaScript files to include on every page. Enter one filename on each line." css_components="" scalar_type="longstring" scalar_parameters="" display_order="510" sub_group="pageContainer"><![CDATA[]]></property>
+    <property property_name="gen_showForumListTitle" property_type="scalar" definition="1" group_name="nodeList" title="Show title on forum list" description="If enabled, the board title will be shown on the forum list page." css_components="" scalar_type="boolean" scalar_parameters="" display_order="410" sub_group="forumList"><![CDATA[1]]></property>
+    <property property_name="gen_favIcon" property_type="scalar" definition="1" group_name="general" title="Favicon path" description="This path represents either the relative or absolute path to the icon you want browsers to display for this site." css_components="" scalar_type="" scalar_parameters="" display_order="520" sub_group="pageContainer"><![CDATA[]]></property>
+    <property property_name="gen_fixedHeader" property_type="scalar" definition="1" group_name="header" title="Fixed header" description="Enabling this option will make the header bar float when the page is scrolled." css_components="" scalar_type="boolean" scalar_parameters="" display_order="200" sub_group="fixedNavigation"><![CDATA[0]]></property>
+    <property property_name="gen_fixedLoginBar" property_type="scalar" definition="1" group_name="header" title="Fixed login bar" description="Enabling this option will make the login bar float when the page is scrolled." css_components="" scalar_type="boolean" scalar_parameters="" display_order="210" sub_group="fixedNavigation"><![CDATA[0]]></property>
+    <property property_name="gen_fixedModeratorBar" property_type="scalar" definition="1" group_name="header" title="Fixed moderator bar" description="Enabling this option will make the moderator bar float when the page is scrolled." css_components="" scalar_type="boolean" scalar_parameters="" display_order="220" sub_group="fixedNavigation"><![CDATA[0]]></property>
+    <property property_name="gen_lastPostAvatarThreadList" property_type="scalar" definition="1" group_name="discussionList" title="Show last post avatar" description="If enabled, the avatar of the last poster will be displayed alongside the last post details." css_components="" scalar_type="boolean" scalar_parameters="" display_order="200" sub_group="lastPostAvatar"><![CDATA[1]]></property>
+    <property property_name="gen_lastPostAvatarImg" property_type="css" definition="1" group_name="nodeList" title="Last Post Avatar" description="This controls the appearance of the last post avatar image." css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="500" sub_group=""><![CDATA[{"extra":"border: 1px solid #c4c4c4 !important;\nborder-radius: 3px !important;\nfloat: left;","height":"23px","margin-left":"-7px","margin-right":"4px","padding-all":"2px","width":"23px"}]]></property>
+    <property property_name="gen_lastPostAvatarThreadListImg" property_type="css" definition="1" group_name="discussionList" title="Last Post Avatar" description="This controls the appearance of the last post avatar image." css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="600" sub_group=""><![CDATA[{"extra":"border: 1px solid #c4c4c4 !important;\nborder-radius: 1px !important;\nfloat: left;","height":"28px","margin-right":"1px","padding-all":"1px","width":"28px"}]]></property>
+    <property property_name="gen_fixedLogoBlock" property_type="scalar" definition="1" group_name="header" title="Fixed logo block" description="Enabling this option will make the logo block float when the page is scrolled." css_components="" scalar_type="boolean" scalar_parameters="" display_order="230" sub_group="fixedNavigation"><![CDATA[0]]></property>
+    <property property_name="gen_navigationVisitorTabAvatar" property_type="scalar" definition="1" group_name="header" title="Show avatar on account tab" description="Enabling this option will show the logged in user's avatar on the account tab." css_components="" scalar_type="boolean" scalar_parameters="" display_order="300" sub_group="navigationVisitorTab"><![CDATA[0]]></property>
+    <property property_name="gen_navigationVisitorTabAvatarHeight" property_type="scalar" definition="1" group_name="header" title="Account Tab Avatar Height" description="Enabling this option will show the logged in user's avatar on the account tab." css_components="" scalar_type="number" scalar_parameters="" display_order="310" sub_group="navigationVisitorTab"><![CDATA[16px]]></property>
+    <property property_name="gen_googleFonts" property_type="scalar" definition="1" group_name="general" title="Google Fonts" description="Enter one font name per line. For multiple font weights, enter the weights after a colon, separated by a comma (e.g. &quot;Open Sans:400,700&quot;)." css_components="" scalar_type="longstring" scalar_parameters="" display_order="600" sub_group="fonts"><![CDATA[]]></property>
+    <property property_name="gen_fontSize1" property_type="scalar" definition="1" group_name="general" title="Font Size 1" description="If not set to 9px, all text that was previously set to 9px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="601" sub_group="fonts"><![CDATA[9px]]></property>
+    <property property_name="gen_fontSize2" property_type="scalar" definition="1" group_name="general" title="Font Size 2" description="If not set to 10px, all text that was previously set to 10px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="602" sub_group="fonts"><![CDATA[10px]]></property>
+    <property property_name="gen_fontSize3" property_type="scalar" definition="1" group_name="general" title="Font Size 3" description="If not set to 12px, all text that was previously set to 12px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="603" sub_group="fonts"><![CDATA[12px]]></property>
+    <property property_name="gen_fontSize4" property_type="scalar" definition="1" group_name="general" title="Font Size 4" description="If not set to 15px, all text that was previously set to 15px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="604" sub_group="fonts"><![CDATA[15px]]></property>
+    <property property_name="gen_fontSize5" property_type="scalar" definition="1" group_name="general" title="Font Size 5" description="If not set to 18px, all text that was previously set to 18px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="605" sub_group="fonts"><![CDATA[18px]]></property>
+    <property property_name="gen_fontSize6" property_type="scalar" definition="1" group_name="general" title="Font Size 6" description="If not set to 22px, all text that was previously set to 22px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="606" sub_group="fonts"><![CDATA[22px]]></property>
+    <property property_name="gen_fontSize7" property_type="scalar" definition="1" group_name="general" title="Font Size 7" description="If not set to 26px, all text that was previously set to 26px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="607" sub_group="fonts"><![CDATA[26px]]></property>
+    <property property_name="gen_fontSmall" property_type="scalar" definition="1" group_name="general" title="Font Small" description="If not set to 11px, all text that was previously set to 11px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="610" sub_group="fonts"><![CDATA[11px]]></property>
+    <property property_name="gen_fontMedium" property_type="scalar" definition="1" group_name="general" title="Font Medium" description="If not set to 13px, all text that was previously set to 13px will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="611" sub_group="fonts"><![CDATA[13px]]></property>
+    <property property_name="gen_fontLarge" property_type="scalar" definition="1" group_name="general" title="Font Large" description="If not set to 16px, all text set to 16px/12pt will be set to the value specified here." css_components="" scalar_type="number" scalar_parameters="" display_order="612" sub_group="fonts"><![CDATA[16px]]></property>
+    <property property_name="gen_touchBrowser" property_type="scalar" definition="1" group_name="responsive" title="Enable touch browser tweaks" description="" css_components="" scalar_type="boolean" scalar_parameters="" display_order="200" sub_group="touch"><![CDATA[1]]></property>
+    <property property_name="gen_headerLogoSvg" property_type="scalar" definition="1" group_name="header" title="Header Logo Image SVG Template" description="This is the name of the SVG template for the main logo image used in the header of all pages." css_components="" scalar_type="" scalar_parameters="" display_order="51" sub_group="Logo"><![CDATA[]]></property>
+    <property property_name="gen_headerLogoWidth" property_type="scalar" definition="1" group_name="header" title="Width of Header Logo" description="Enter the width in pixels that you would like to reserve for the logo in the header. Set to 100% if you want the navigation bar to be underneath the logo." css_components="" scalar_type="number" scalar_parameters="" display_order="56" sub_group="Logo"><![CDATA[100%]]></property>
+    <property property_name="gen_headerLogoTabLinksBelow" property_type="scalar" definition="1" group_name="header" title="Tab Links Below Logo" description="Enabling this property will keep tab links below the logo when logo is not full width. This option is ignored if the logo is full width." css_components="" scalar_type="boolean" scalar_parameters="" display_order="57" sub_group="Logo"><![CDATA[0]]></property>
+    <property property_name="gen_footerLinksPosition" property_type="scalar" definition="1" group_name="footer" title="Footer Links Position" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;middle={xen:phrase gen_middle}&#10;right={xen:phrase right}" display_order="1" sub_group="FooterLinks"><![CDATA[right]]></property>
+    <property property_name="gen_footerFullWidth" property_type="scalar" definition="1" group_name="footer" title="Full Width Footer" description="Enabling this option will extend the footer the full width of the page." css_components="" scalar_type="boolean" scalar_parameters="" display_order="10" sub_group="Container"><![CDATA[0]]></property>
+    <property property_name="gen_contactUsPosition" property_type="scalar" definition="1" group_name="footer" title="Contact Us Position" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;footer={xen:phrase gen_footer}&#10;navigation={xen:phrase gen_navigation_bar}&#10;hidden={xen:phrase hidden}" display_order="100" sub_group="ContactUs"><![CDATA[footer]]></property>
+    <property property_name="gen_navTabPopUpClosedHover" property_type="css" definition="1" group_name="header" title="Navigation Tab Hover" description="" css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="710" sub_group=""><![CDATA[[]]]></property>
+    <property property_name="gen_navLinkPopUpClosed" property_type="css" definition="1" group_name="header" title="Navigation Link" description="" css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="700" sub_group=""><![CDATA[[]]]></property>
+    <property property_name="gen_navLinkPopUpClosedHover" property_type="css" definition="1" group_name="header" title="Navigation Link Hover" description="" css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="705" sub_group=""><![CDATA[[]]]></property>
+    <property property_name="gen_enableTabSelection" property_type="scalar" definition="1" group_name="header" title="Select Active Navigation Tab" description="Disabling this option will stop any tabs from appearing as selected." css_components="" scalar_type="boolean" scalar_parameters="" display_order="1000" sub_group="ActiveTab"><![CDATA[1]]></property>
+    <property property_name="gen_publicTabsLocation" property_type="scalar" definition="1" group_name="header" title="Public Tabs Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="800" sub_group="TabsLocation"><![CDATA[left]]></property>
+    <property property_name="gen_visitorTabsLocation" property_type="scalar" definition="1" group_name="header" title="Visitor Tabs Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="810" sub_group="TabsLocation"><![CDATA[right]]></property>
+    <property property_name="gen_topBorder" property_type="css" definition="1" group_name="header" title="Top Border" description="" css_components="border" scalar_type="" scalar_parameters="" display_order="1000" sub_group="TopBorder"><![CDATA[[]]]></property>
+    <property property_name="gen_logoBlockContainer" property_type="css" definition="1" group_name="header" title="Logo Block Container" description="" css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="900" sub_group="LogoBlock"><![CDATA[[]]]></property>
+    <property property_name="gen_sidebarLocation" property_type="scalar" definition="1" group_name="sidebar" title="Sidebar Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="1" sub_group="Sidebar"><![CDATA[right]]></property>
+    <property property_name="gen_searchBarLocation" property_type="scalar" definition="1" group_name="header" title="Search Bar Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="820" sub_group="TabsLocation"><![CDATA[right]]></property>
+    <property property_name="gen_tabLinksLocation" property_type="scalar" definition="1" group_name="header" title="Tab Links Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="830" sub_group="TabsLocation"><![CDATA[left]]></property>
+  </style_properties>
+  <templates>
+    <template title="genesis.css" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[<xen:if is="{xen:property gen_fontMedium} != '13px'">
+body {
+	font-size: 13px;
+}
+</xen:if>
+
+<xen:if is="{xen:property gen_fixedHeader}">
+#headerMover #header.fixed {
+	position: fixed;
+	z-index: 60;
+}
+</xen:if>
+
+<xen:if is="{xen:property gen_fixedLoginBar}">
+#loginBar.fixed {
+	position: fixed;
+	width: 100%;
+	z-index: 60;
+}
+</xen:if>
+
+<xen:if is="{xen:property gen_fixedModeratorBar}">
+#moderatorBar.fixed {
+	position: fixed;
+	width: 100%;
+	z-index: 1;
+	z-index: 60;
+}
+</xen:if>
+
+<xen:if is="{xen:property gen_navigationVisitorTabAvatar}">
+	.accountUsername .avatar img {
+		height: {xen:property gen_navigationVisitorTabAvatarHeight};
+		margin-bottom: {xen:calc '-{xen:property gen_navigationVisitorTabAvatarHeight} / 2'}px;
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_headerLogoWidth} != '100%'">
+	<xen:if is="{xen:property gen_headerLogoTabLinksBelow}">
+		#headerMover #headerProxy
+		{
+			height: {xen:calc '{xen:property headerLogoHeight} + {xen:property headerTabHeight} + 2'}px; /* +2 borders */
+		}
+		
+		.navTabs
+		{
+			margin-top: {xen:calc '-{xen:property headerTabHeight}'}px;
+			margin-left: {xen:property gen_headerLogoWidth};
+		}
+	<xen:else />
+		#headerMover #headerProxy
+		{
+			height: {xen:property headerLogoHeight}; /* +2 borders */
+		}
+				
+		#navigation .pageContent
+		{
+			margin-top: {xen:calc '-{xen:property headerTabHeight} * 2 - 2'}px;
+			margin-left: {xen:property gen_headerLogoWidth};
+		}
+	</xen:if>
+</xen:if>
+
+<xen:if is="{xen:property gen_footerLinksPosition} == 'middle'">
+	.footerLinks li
+	{
+		float: none;
+		display: inline-block;
+	}
+	
+	.footerLinks
+	{
+		float: none;
+		text-align: center;
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_footerFullWidth}">
+	.footer
+	{
+		{xen:property footer}
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_topBorder}">
+	#headerMover #headerProxy, #header
+	{
+		{xen:property gen_topBorder}
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_logoBlockContainer}">
+	#header #logoBlock .pageWidth .pageContent
+	{
+		{xen:property gen_logoBlockContainer}
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_navLinkPopUpClosed}">
+	.navTabs .navTab.PopupClosed .navLink
+	{
+		{xen:property gen_navLinkPopUpClosed}
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_navLinkPopUpClosedHover}">
+	.navTabs .navTab.PopupClosed .navLink:hover
+	{
+		{xen:property gen_navLinkPopUpClosedHover}
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_navTabPopUpClosedHover}">
+	.navTabs .navTab.PopupClosed:hover
+	{
+		background-color: none;
+		{xen:property gen_navTabPopUpClosedHover}
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_publicTabsLocation} == 'right'">
+	.navTabs .publicTabs {
+		float: right;
+	}
+<xen:elseif is="{xen:property gen_publicTabsLocation} == 'none'" />
+	.navTabs .publicTabs {
+		display: none;
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_visitorTabsLocation} == 'left'">
+	.navTabs .visitorTabs {
+		float: left;
+	}
+<xen:elseif is="{xen:property gen_visitorTabsLocation} == 'none'" />
+	.navTabs .visitorTabs {
+		display: none;
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_searchBarLocation} == 'left'">
+	#QuickSearchPlaceholder, #QuickSearch {
+		right: initial;
+		left: 25px;
+	}
+	.withSearch .navTabs .navTab.selected .blockLinksList {
+		margin-right: 8px;
+		margin-left: 275px;
+	}
+<xen:elseif is="{xen:property gen_searchBarLocation} == 'none'" />
+	#QuickSearchPlaceholder {
+		display: none;
+	}
+</xen:if>
+
+<xen:if is="{xen:property gen_tabLinksLocation} == 'right'">
+	.navTabs .navTab.selected .tabLinks li {
+		float: right;
+	}
+<xen:elseif is="{xen:property gen_tabLinksLocation} == 'none'" />
+	.navTabs .navTab.selected .tabLinks {
+		display: none;
+	}
+</xen:if>
+
+/* Sidebar */
+
+<xen:if is="{xen:property gen_sidebarLocation} == 'left'">
+	.sidebar {
+		float: left;
+	}
+	
+	.mainContainer
+	{
+		 float: right;
+		 margin-right: 0;
+		 margin-left: -{xen:calc '{xen:property sidebar.width} + 10'}px;
+	}
+
+	.mainContent
+	{
+		margin-right: 0;
+		margin-left: {xen:calc '{xen:property sidebar.width} + 10'}px;
+	}
+<xen:elseif is="{xen:property gen_sidebarLocation} == 'none'" />
+	.sidebar {
+		display: none;
+	}
+	
+	.mainContainer
+	{
+		 margin-right: 0;
+		 margin-left: 0;
+	}
+
+	.mainContent
+	{
+		margin-right: 0;
+		margin-left: 0;
+	}
+</xen:if>]]></template>
+    <template title="gen_lastpostavatar.css" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[.lastPostInfo a.avatar img {
+	{xen:property gen_lastPostAvatarThreadListImg}
+}
+
+.nodeLastPost a.avatar img {
+	{xen:property gen_lastPostAvatarImg}
+}
+
+.discussionListItem .lastPostInfo dt {
+	margin-left: 33px;
+}
+
+<xen:if is="{$xenOptions.currentVersionId} >= 1020000 && {xen:property enableResponsive}">
+@media (max-width:{xen:property maxResponsiveMediumWidth})
+{
+	.lastPostInfo a.avatar img
+	{
+		display: none;
+	}
+
+	.nodeLastPost a.avatar img
+	{
+		display: none;
+	}
+}
+</xen:if>]]></template>
+    <template title="gen_node_category_avatar" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[<xen:if is="{xen:property gen_lastPostAvatar} && !{$category.privateInfo} && {$category.lastPost.date}">
+	<xen:require css="gen_lastpostavatar.css" />
+	<xen:avatar user="$category.lastPost" size="s" img="true" />
+</xen:if>]]></template>
+    <template title="gen_node_forum_avatar" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[<xen:if is="{xen:property gen_lastPostAvatar} && !{$forum.privateInfo} && {$forum.lastPost.date}">
+	<xen:require css="gen_lastpostavatar.css" />
+	<xen:avatar user="$forum.lastPost" size="s" img="true" />
+</xen:if>]]></template>
+    <template title="gen_node_library_avatar" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[<xen:if is="{xen:property gen_lastPostAvatar} && !{$library.privateInfo} && {$library.lastArticlePage.date}">
+	<xen:require css="gen_lastpostavatar.css" />
+	<xen:avatar user="$library.lastArticlePage" size="s" img="true" />
+</xen:if>]]></template>
+    <template title="gen_thread_list_item" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[<xen:if is="{xen:property gen_lastPostAvatarThreadList}">
+	<xen:require css="gen_lastpostavatar.css" />
+		<xen:if is="is_array({$thread.lastPostInfo})">
+		<xen:avatar user="$thread.lastPostInfo" size="s" img="true" />
+	</xen:if>
+</xen:if>]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="forum_list" modification_key="gen_forumList" description="Remove forum list title if required by style properties." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<xen:h1>)(.*)(</xen:h1>)#Us]]></find>
+      <replace><![CDATA[${1}<xen:if is="{xen:property gen_showForumListTitle}">
+${2}
+</xen:if>${3}]]></replace>
+    </modification>
+    <modification template="header" modification_key="gen_header" description="Adds fixed navigation Javascript to header." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#$#]]></find>
+      <replace><![CDATA[<xen:if is="{xen:property gen_fixedHeader}">
+	<script>
+	   jQuery(document).ready(function($){
+	      function scrollIfAnchor(href) {
+	         href = typeof(href) == "string" ? href : $(this).attr("href");
+	         if(!href) return;
+	         var fromTop = $('#content').offset().top;
+	         var $target = $(href);
+	         if($target.length) {
+	            $('html, body').animate({ scrollTop: $target.offset().top - fromTop });
+	         }
+	      }    
+	
+	      scrollIfAnchor(window.location.hash);
+	      $("body").on("click", "a[href^='#']", scrollIfAnchor);
+	   });
+	</script>
+	<xen:if is="{$visitor.user_id}">
+		<xen:set var="$barId">moderatorBar</xen:set>
+	<xen:else />
+		<xen:set var="$barId">loginBar</xen:set>
+	</xen:if>
+	<xen:if is="({$visitor.user_id} && {xen:property gen_fixedModeratorBar}) || (!{$visitor.user_id} && {xen:property gen_fixedLoginBar})">
+		<script>
+		   jQuery(document).ready(function($){
+		      $('#header').addClass('fixed');
+		      $('#{$barId}').addClass('fixed');
+		      $('#header').css('top', $('#{$barId}').outerHeight() + "px");
+		      $('#headerProxy').css('padding-top', $('#{$barId}').outerHeight() + "px");
+		   });
+		</script>
+	<xen:else />
+		<script>
+		   jQuery(document).ready(function($){
+		      $(window).bind('scroll', function() {
+		         var navHeight = ($(window).scrollTop());
+		         if (navHeight > $('#{$barId}').outerHeight()) {
+		            $('#header').addClass('fixed');
+		         } else {
+		            $('#header').removeClass('fixed');
+		         }
+		       });
+		   });
+		</script>
+	</xen:if>
+	<xen:if is="!{xen:property gen_fixedLogoBlock}">
+		<script>
+		   jQuery(document).ready(function($){
+		      $(window).bind('scroll', function() {
+		         var navHeight = ($(window).scrollTop());
+		         var logoHeight = $('#logo').height();
+		         $('#logoBlock').css('margin-bottom', -Math.min(logoHeight, navHeight) + "px");
+		       });
+		   });
+		</script>
+	</xen:if>
+</xen:if>]]></replace>
+    </modification>
+    <modification template="waindigo_library_level_2_library" modification_key="gen_libraryLevel2" description="Adds last poster's avatar to the last post information in the forum node information." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
+      <replace><![CDATA[${0}
+<xen:if is="{xen:property gen_lastPostAvatar}">
+	<xen:include template="gen_node_library_avatar" />
+</xen:if>]]></replace>
+    </modification>
+    <modification template="navigation_visitor_tab" modification_key="gen_navigationVisitorTab" description="Adds avatar to navigation visitor tab." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<strong class="accountUsername">#]]></find>
+      <replace><![CDATA[${0}{xen:if {xen:property gen_navigationVisitorTabAvatar}, '<span class="avatar"><img src="{xen:helper avatar, $visitor, s}" alt="" /></span> '}]]></replace>
+    </modification>
+    <modification template="node_category_level_2" modification_key="gen_nodeCategoryLevel2" description="Adds last poster's avatar to the last post information in the category node information." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
+      <replace><![CDATA[${0}
+<xen:if is="{xen:property gen_lastPostAvatar}">
+	<xen:include template="gen_node_category_avatar" />
+</xen:if>]]></replace>
+    </modification>
+    <modification template="node_forum_level_2" modification_key="gen_nodeForumLevel2" description="Adds last poster's avatar to the last post information in the forum node information." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
+      <replace><![CDATA[${0}
+<xen:if is="{xen:property gen_lastPostAvatar}">
+	<xen:include template="gen_node_forum_avatar" />
+</xen:if>]]></replace>
+    </modification>
+    <modification template="waindigo_node_level_2_socialgroups" modification_key="gen_nodeSocialCategoryLevel2" description="Adds last poster's avatar to the last post information in the social category node information." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
+      <replace><![CDATA[${0}
+<xen:if is="{xen:property gen_lastPostAvatar}">
+	<xen:include template="gen_node_forum_avatar" />
+</xen:if>]]></replace>
+    </modification>
+    <modification template="PAGE_CONTAINER" modification_key="gen_pageContainer" description="Applies template modifications for various style properties." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<!--XenForo_Require:CSS-->.*)(<link rel="apple-touch-icon")#Us]]></find>
+      <replace><![CDATA[<xen:if is="{$googleFonts}"><link href='http://fonts.googleapis.com/css?family={$googleFonts}' rel='stylesheet' type='text/css'></xen:if>
+	${1}<xen:if is="{xen:property gen_favIcon}"><link rel="icon" type="image/x-icon" href="{xen:property gen_favIcon}" /></xen:if>
+	${2}]]></replace>
+    </modification>
+    <modification template="waindigo_social_forum_list_item_socialgroups" modification_key="gen_socialForumListItem" description="Adds last poster's avatar to the last post information in the social forum node information." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
+      <replace><![CDATA[${0}
+<xen:if is="{xen:property gen_lastPostAvatar}">
+	<xen:include template="gen_node_forum_avatar" />
+</xen:if>]]></replace>
+    </modification>
+    <modification template="thread_list_item" modification_key="gen_threadListItem" description="Adds last poster's avatar to the last post information in the thread list item." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(<dl class="lastPostInfo">)(.*</dl>)#Us]]></find>
+      <replace><![CDATA[${1}
+<xen:if is="{xen:property gen_lastPostAvatarThreadList}">
+	<xen:include template="gen_thread_list_item" />
+</xen:if>
+${2}]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
