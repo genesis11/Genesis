@@ -194,7 +194,7 @@ ${2}
     <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadCssOutput" active="1" hint="XenForo_CssOutput" description=""/>
     <listener event_id="load_class" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="loadStylePropertyListViewAdmin" active="1" hint="XenForo_ViewAdmin_StyleProperty_List" description=""/>
     <listener event_id="navigation_tabs" execute_order="10" callback_class="Genesis_Listener_Proxy" callback_method="navigationTabs" active="1" hint="" description=""/>
-    <listener event_id="template_create" execute_order="10" callback_class="Genesis_Listener_Template" callback_method="templateCreate" active="1" hint="" description=""/>
+    <listener event_id="template_create" execute_order="10" callback_class="Genesis_Listener_Template" callback_method="templateCreate" active="1" hint="PAGE_CONTAINER" description=""/>
   </code_event_listeners>
   <cron/>
   <email_templates/>

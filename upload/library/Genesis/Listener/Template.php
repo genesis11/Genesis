@@ -3,14 +3,14 @@
 class Genesis_Listener_Template
 {
 
-    public static function templateCreate($templateName, array &$params, XenForo_Template_Abstract $template)
+    public static function templateCreate(&$templateName, array &$params, XenForo_Template_Abstract $template)
     {
         $extraCss = self::_getStylePropertyValueFromCache('gen_extraCss', $params);
         $templateNames = preg_split("/\\r\\n|\\r|\\n/", $extraCss);
-        foreach ($templateNames as $templateName) {
-            $templateName = trim($templateName);
-            if ($templateName) {
-                $template->addRequiredExternal('css', $templateName);
+        foreach ($templateNames as $_templateName) {
+            $_templateName = trim($_templateName);
+            if ($_templateName) {
+                $template->addRequiredExternal('css', $_templateName);
             }
         }
 
