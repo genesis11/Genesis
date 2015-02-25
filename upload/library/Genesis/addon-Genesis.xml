@@ -417,16 +417,19 @@ body {
 #loginBar.fixed {
 	position: fixed;
 	width: 100%;
-	z-index: 60;
+	z-index: 61;
 }
 </xen:if>
+.LoggedOut #loginBar {
+	z-index: 61;
+}
 
 <xen:if is="{xen:property gen_fixedModeratorBar}">
 #moderatorBar.fixed {
 	position: fixed;
 	width: 100%;
 	z-index: 1;
-	z-index: 60;
+	z-index: 61;
 }
 </xen:if>
 
@@ -706,7 +709,13 @@ ${2}
 		      $(window).bind('scroll', function() {
 		         var navHeight = ($(window).scrollTop());
 		         var logoHeight = $('#logo').height();
-		         $('#logoBlock').css('margin-bottom', -Math.min(logoHeight, navHeight) + "px");
+		         <xen:if is="{$visitor.user_id} && !{xen:property gen_fixedModeratorBar}">
+		         	navHeight = Math.max(0, navHeight - $('#moderatorBar').outerHeight());
+		         <xen:elseif is="!{$visitor.user_id} && !{xen:property gen_fixedLoginBar}" />
+		         	navHeight = Math.max(0, navHeight - $('#loginBar').outerHeight());
+		         </xen:if>
+		         var adjustHeight = Math.min(logoHeight, navHeight);
+		         $('#logoBlock').css('margin-top', -adjustHeight + "px");
 		       });
 		   });
 		</script>
