@@ -400,32 +400,42 @@ ${2}
     <property property_name="gen_tabLinksLocation" property_type="scalar" definition="1" group_name="header" title="Tab Links Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="830" sub_group="TabsLocation"><![CDATA[left]]></property>
   </style_properties>
   <templates>
-    <template title="genesis.css" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[<xen:if is="{xen:property gen_fontMedium} != '13px'">
-body {
+    <template title="genesis.css" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[<xen:if is="{xen:property gen_fontMedium} != '13px'">
+body
+{
 	font-size: 13px;
 }
 </xen:if>
-
-<xen:if is="{xen:property gen_fixedHeader}">
-#headerMover #header.fixed {
+<xen:if hascontent="true">
+<xen:contentcheck><xen:include template="genesis_appearance.css" /></xen:contentcheck>
+</xen:if>
+<xen:if hascontent="true">
+<xen:contentcheck><xen:include template="genesis_sidebar.css" /></xen:contentcheck>
+</xen:if>]]></template>
+    <template title="genesis_appearance.css" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[<xen:if is="{xen:property gen_fixedHeader}">
+#headerMover #header.fixed
+{
 	position: fixed;
 	z-index: 60;
 }
 </xen:if>
 
 <xen:if is="{xen:property gen_fixedLoginBar}">
-#loginBar.fixed {
+#loginBar.fixed
+{
 	position: fixed;
 	width: 100%;
 	z-index: 61;
 }
 </xen:if>
-.LoggedOut #loginBar {
+.LoggedOut #loginBar
+{
 	z-index: 61;
 }
 
 <xen:if is="{xen:property gen_fixedModeratorBar}">
-#moderatorBar.fixed {
+#moderatorBar.fixed
+{
 	position: fixed;
 	width: 100%;
 	z-index: 1;
@@ -434,7 +444,8 @@ body {
 </xen:if>
 
 <xen:if is="{xen:property gen_navigationVisitorTabAvatar}">
-	.accountUsername .avatar img {
+	.accountUsername .avatar img
+	{
 		height: {xen:property gen_navigationVisitorTabAvatarHeight};
 		margin-bottom: {xen:calc '-{xen:property gen_navigationVisitorTabAvatarHeight} / 2'}px;
 	}
@@ -524,27 +535,32 @@ body {
 </xen:if>
 
 <xen:if is="{xen:property gen_publicTabsLocation} == 'right'">
-	.navTabs .publicTabs {
+	.navTabs .publicTabs
+	{
 		float: right;
 	}
 <xen:elseif is="{xen:property gen_publicTabsLocation} == 'none'" />
-	.navTabs .publicTabs {
+	.navTabs .publicTabs
+	{
 		display: none;
 	}
 </xen:if>
 
 <xen:if is="{xen:property gen_visitorTabsLocation} == 'left'">
-	.navTabs .visitorTabs {
+	.navTabs .visitorTabs
+	{
 		float: left;
 	}
 <xen:elseif is="{xen:property gen_visitorTabsLocation} == 'none'" />
-	.navTabs .visitorTabs {
+	.navTabs .visitorTabs
+	{
 		display: none;
 	}
 </xen:if>
 
 <xen:if is="{xen:property gen_searchBarLocation} == 'left'">
-	#QuickSearchPlaceholder, #QuickSearch {
+	#QuickSearchPlaceholder, #QuickSearch
+	{
 		right: initial;
 		left: 25px;
 	}
@@ -553,25 +569,26 @@ body {
 		margin-left: 275px;
 	}
 <xen:elseif is="{xen:property gen_searchBarLocation} == 'none'" />
-	#QuickSearchPlaceholder {
+	#QuickSearchPlaceholder
+	{
 		display: none;
 	}
 </xen:if>
 
 <xen:if is="{xen:property gen_tabLinksLocation} == 'right'">
-	.navTabs .navTab.selected .tabLinks li {
+	.navTabs .navTab.selected .tabLinks li
+	{
 		float: right;
 	}
 <xen:elseif is="{xen:property gen_tabLinksLocation} == 'none'" />
-	.navTabs .navTab.selected .tabLinks {
+	.navTabs .navTab.selected .tabLinks
+	{
 		display: none;
 	}
-</xen:if>
-
-/* Sidebar */
-
-<xen:if is="{xen:property gen_sidebarLocation} == 'left'">
-	.sidebar {
+</xen:if>]]></template>
+    <template title="genesis_sidebar.css" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[<xen:if is="{xen:property gen_sidebarLocation} == 'left'">
+	.sidebar
+	{
 		float: left;
 	}
 	
