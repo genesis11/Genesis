@@ -287,6 +287,10 @@ ${2}
     <phrase title="style_property_gen_fixedLogoBlock_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Fixed logo block]]></phrase>
     <phrase title="style_property_gen_fixedModeratorBar_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Enabling this option will make the moderator bar float when the page is scrolled.]]></phrase>
     <phrase title="style_property_gen_fixedModeratorBar_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Fixed moderator bar]]></phrase>
+    <phrase title="style_property_gen_fixedWidthHeader_description_master" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_fixedWidthHeader_master" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[Fixed-width header]]></phrase>
+    <phrase title="style_property_gen_fixedWidthModeratorBar_description_master" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[]]></phrase>
+    <phrase title="style_property_gen_fixedWidthModeratorBar_master" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[Fixed-width moderator bar]]></phrase>
     <phrase title="style_property_gen_fontLarge_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 16px, all text set to 16px/12pt will be set to the value specified here.]]></phrase>
     <phrase title="style_property_gen_fontLarge_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[Font Large]]></phrase>
     <phrase title="style_property_gen_fontMedium_description_master" version_id="1000131" version_string="1.0.0 Beta 1"><![CDATA[If not set to 13px, all text that was previously set to 13px will be set to the value specified here.]]></phrase>
@@ -398,6 +402,8 @@ ${2}
     <property property_name="gen_sidebarLocation" property_type="scalar" definition="1" group_name="sidebar" title="Sidebar Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="1" sub_group="Sidebar"><![CDATA[right]]></property>
     <property property_name="gen_searchBarLocation" property_type="scalar" definition="1" group_name="header" title="Search Bar Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="820" sub_group="TabsLocation"><![CDATA[right]]></property>
     <property property_name="gen_tabLinksLocation" property_type="scalar" definition="1" group_name="header" title="Tab Links Location" description="" css_components="" scalar_type="template" scalar_parameters="style_property_unit_select&#10;left={xen:phrase left}&#10;right={xen:phrase right}&#10;none={xen:phrase none}" display_order="830" sub_group="TabsLocation"><![CDATA[left]]></property>
+    <property property_name="gen_fixedWidthModeratorBar" property_type="scalar" definition="1" group_name="header" title="Fixed-width moderator bar" description="" css_components="" scalar_type="boolean" scalar_parameters="" display_order="920" sub_group="fixedWidth"><![CDATA[0]]></property>
+    <property property_name="gen_fixedWidthHeader" property_type="scalar" definition="1" group_name="header" title="Fixed-width header" description="" css_components="" scalar_type="boolean" scalar_parameters="" display_order="900" sub_group="fixedWidth"><![CDATA[]]></property>
   </style_properties>
   <templates>
     <template title="genesis.css" version_id="1000132" version_string="1.0.0 Beta 2"><![CDATA[<xen:if is="{xen:property gen_fontMedium} != '13px'">
@@ -739,12 +745,20 @@ ${2}
 	</xen:if>
 </xen:if>]]></replace>
     </modification>
+    <modification template="header.css" modification_key="gen_headerCss" description="Fixed width header." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(\#header)(\s*{.*\s+})#Us]]></find>
+      <replace><![CDATA[${1}<xen:if is="{xen:property gen_fixedWidthHeader}"> .pageContent</xen:if>${2}]]></replace>
+    </modification>
     <modification template="waindigo_library_level_2_library" modification_key="gen_libraryLevel2" description="Adds last poster's avatar to the last post information in the forum node information." execution_order="10" enabled="1" action="preg_replace">
       <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
       <replace><![CDATA[${0}
 <xen:if is="{xen:property gen_lastPostAvatar}">
 	<xen:include template="gen_node_library_avatar" />
 </xen:if>]]></replace>
+    </modification>
+    <modification template="moderator_bar.css" modification_key="gen_moderatorBarCss" description="Fixed width moderator bar." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(\#moderatorBar)(\s*{.*\s+})#Us]]></find>
+      <replace><![CDATA[${1}<xen:if is="{xen:property gen_fixedWidthModeratorBar}"> .pageContent</xen:if>${2}]]></replace>
     </modification>
     <modification template="navigation_visitor_tab" modification_key="gen_navigationVisitorTab" description="Adds avatar to navigation visitor tab." execution_order="10" enabled="1" action="preg_replace">
       <find><![CDATA[#<strong class="accountUsername">#]]></find>
@@ -776,6 +790,10 @@ ${2}
       <replace><![CDATA[<xen:if is="{$googleFonts}"><link href='http://fonts.googleapis.com/css?family={$googleFonts}' rel='stylesheet' type='text/css'></xen:if>
 	${1}<xen:if is="{xen:property gen_favIcon}"><link rel="icon" type="image/x-icon" href="{xen:property gen_favIcon}" /></xen:if>
 	${2}]]></replace>
+    </modification>
+    <modification template="public.css" modification_key="gen_publicCss" description="Fixed width header." execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#(\#headerMover \#headerProxy\s*{.*)({xen:property header.background})#Us]]></find>
+      <replace><![CDATA[${1}<xen:if is="!{xen:property gen_fixedWidthHeader}">${2}</xen:if>]]></replace>
     </modification>
     <modification template="waindigo_social_forum_list_item_socialgroups" modification_key="gen_socialForumListItem" description="Adds last poster's avatar to the last post information in the social forum node information." execution_order="10" enabled="1" action="preg_replace">
       <find><![CDATA[#<div[^>]*class="nodeLastPost[^"]*"[^>]*>#Us]]></find>
